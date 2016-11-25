@@ -103,9 +103,9 @@
      :build-method-str build-method-str
      :build-method (find-method (class builder) build-method-str 1)
      :repeated? (.isRepeated field-descriptor)
-     :get-method (str (field-builder-method-name "get" field-descriptor) (when (.isRepeated field-descriptor) "List"))
-     :java-type (.getJavaType field-descriptor)
-     :type1 (.getType field-descriptor)}))
+     :get-method (let [gstr (str (field-builder-method-name "get" field-descriptor) (when (.isRepeated field-descriptor) "List"))]
+                   (find-method (class builder) gstr))
+     :java-type (.getJavaType field-descriptor)}))
 
 (defn ->message [o clz]
   (let [builder (find-builder clz)
@@ -114,3 +114,29 @@
       (let [{:keys [type build-method name repeated?]} (parse-field-descriptor builder field)]
         (build type builder field (get o name))))
     (.build builder)))
+
+
+
+(declare <-message)
+
+
+(defn parse-message-value [v]
+  (cond (instance? com.google.protobuf.Descriptors$EnumValueDescriptor v)
+        (.getName v)
+        (instance? com.google.protobuf.Message v)
+        (<-message v)
+        :default
+        v))
+
+
+
+(defn <-message [m]
+  (let [mm (java.util.HashMap.)]
+    (.putAll mm (.getAllFields m))
+    (into {} (for [[k v ] mm]
+               [(keyword (.getName k))
+                (if (instance? java.util.List v)
+                  (let [vv (java.util.ArrayList.)
+                        _ (.addAll vv v)]
+                    (into [] (map parse-message-value vv)))
+                  (parse-message-value v))]))))

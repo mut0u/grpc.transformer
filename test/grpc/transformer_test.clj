@@ -32,6 +32,18 @@
              true)))))
 
 
+(deftest test11
+  (testing "he"
+    (is (= true
+           (do
+             (let [clz Demo$StringMessage
+                   builder (find-builder clz)
+                   descriptor (find-builder-descriptor clz)]
+               (prn (<-message (->message {:s "aa"} clz))))
+             true)))))
+
+
+
 (deftest test2
   (testing "he"
     (is (= true
@@ -41,6 +53,20 @@
                    descriptor (find-builder-descriptor clz)]
                (prn (->message {:slist ["a" "d" "e"]} clz)))
              true)))))
+
+
+
+(deftest test12
+  (testing "he"
+    (is (= true
+           (do
+             (let [clz Demo$RepeatedStringMessage
+                   builder (find-builder clz)
+                   descriptor (find-builder-descriptor clz)]
+               (prn (<-message (->message {:slist ["a" "d" "e"]} clz))))
+             true)))))
+
+
 
 
 (deftest test3
@@ -54,6 +80,18 @@
 
 
 
+(deftest test13
+  (testing "he"
+    (is (= true
+           (let [clz Demo$EnumMessage
+                 builder (find-builder clz)
+                 descriptor (find-builder-descriptor clz)]
+             (prn (<-message (->message {:bar "BAR_B"} clz)))
+             true)))))
+
+
+
+
 (deftest test4
   (testing "he"
     (is (= true
@@ -64,6 +102,26 @@
              true)))))
 
 
+(deftest test14
+  (testing "he"
+    (is (= true
+           (let [clz Demo$RepeatedEnumMessage
+                 builder (find-builder clz)
+                 descriptor (find-builder-descriptor clz)]
+             (prn (<-message (->message {:bar ["BAR_B" "BAR_C" "BAR_A" "BAR_B"]} clz)))
+             true)))))
+
+
+
+
+
+
+
+
+
+
+
+
 
 (deftest test5
   (testing "he"
@@ -72,6 +130,17 @@
                  builder (find-builder clz)
                  descriptor (find-builder-descriptor clz)]
              (prn (->message {:i 66} clz))
+             true)))))
+
+
+
+(deftest test15
+  (testing "he"
+    (is (= true
+           (let [clz Demo$IntMessage
+                 builder (find-builder clz)
+                 descriptor (find-builder-descriptor clz)]
+             (prn (<-message (->message {:i 66} clz)))
              true)))))
 
 
@@ -87,6 +156,16 @@
              true)))))
 
 
+(deftest test16
+  (testing "he"
+    (is (= true
+           (let [clz Demo$Message1
+                 builder (find-builder clz)
+                 descriptor (find-builder-descriptor clz)]
+             (prn (<-message (->message {:str "hello world" :i 76} clz)))
+             true)))))
+
+
 (deftest test7
   (testing "he"
     (is (= true
@@ -94,6 +173,16 @@
                  builder (find-builder clz)
                  descriptor (find-builder-descriptor clz)]
              (prn (->message {:m2 {:s "hello world0" :i 1}} clz))
+             true)))))
+
+
+(deftest test17
+  (testing "he"
+    (is (= true
+           (let [clz Demo$DemoMessage
+                 builder (find-builder clz)
+                 descriptor (find-builder-descriptor clz)]
+             (prn (<-message (->message {:m2 {:s "hello world0" :i 1}} clz)))
              true)))))
 
 
@@ -110,7 +199,41 @@
              true)))))
 
 
+(deftest test18
+  (testing "he"
+    (is (= true
+           (let [clz Demo$DemoMessage
+                 builder (find-builder clz)
+                 descriptor (find-builder-descriptor clz)]
+             (prn (<-message (->message {;;:m2 {:s "hello world0" :i 1}
+                                         :m_list [{:str "aa" :i  1}
+                                                  {:str "bb" :i  2}]} Demo$DemoMessage)))
+             true)))))
+
+
+
+
 (deftest test9
+  (testing "he"
+    (is (= true
+           (let [clz Demo$NestedMessage
+                 builder (find-builder clz)
+                 descriptor (find-builder-descriptor clz)]
+             (prn (->message {:n {:n2 {:n1 {:str "BBB"} :i {:s "aaaa"}}}} clz))
+             true)))))
+
+(deftest test19
+  (testing "he"
+    (is (= true
+           (let [clz Demo$NestedMessage
+                 builder (find-builder clz)
+                 descriptor (find-builder-descriptor clz)]
+             (prn (<-message (->message {:n {:n2 {:n1 {:str "BBB"} :i {:s "aaaa"}}}} clz)))
+             true)))))
+
+
+
+(deftest test10
   (testing "he"
     (is (= true
            (let [clz Demo$NestedMessage
