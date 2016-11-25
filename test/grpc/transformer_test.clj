@@ -193,7 +193,7 @@
            (let [clz Demo$DemoMessage
                  builder (find-builder clz)
                  descriptor (find-builder-descriptor clz)]
-             (prn (->message {:m2 {:s "hello world0" :i 1}
+             (prn (->message {;;:m2 {:s "hello world0" :i 1}
                               :m_list [{:str "aa" :i  1}
                                        {:str "bb" :i  2}]} clz))
              true)))))

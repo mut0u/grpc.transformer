@@ -69,7 +69,9 @@
     (let [enum-field-descripter (.getEnumType field-descriptor)]
       (if (.isRepeated field-descriptor)
         (doseq [v (map #(.findValueByName enum-field-descripter %) vals)]
-          (.addRepeatedField builder field-descriptor v))
+          ;;(.setRepeatedField builder field-descriptor 0 v)
+          (.addRepeatedField builder field-descriptor v)
+          )
         (.setField builder field-descriptor (.findValueByName enum-field-descripter vals))))))
 
 (defmethod build :INT [type builder field-descriptor vals]
@@ -86,6 +88,7 @@
   (when vals
     (if (.isRepeated field-descriptor)
       (let [clz (message-field-descriptor->clz builder field-descriptor)]
+        (.clearField builder field-descriptor)
         (doseq [v vals]
           (let [inner-message (->message v clz)]
             (.addRepeatedField builder field-descriptor inner-message))))
