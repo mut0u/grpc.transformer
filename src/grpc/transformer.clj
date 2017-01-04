@@ -42,8 +42,6 @@
                })
 
 
-
-
 (defn message-field-descriptor->clz [builder field-descriptor]
   (let [pre  (if (.isRepeated field-descriptor) "add" "get")
         builder-name (str (field-builder-method-name pre field-descriptor) "Builder")
@@ -55,14 +53,13 @@
       (Class/forName (.substring new-builder-name 0 (- (count new-builder-name) 8))))))
 
 
-
-
 (defmethod build :STRING [type builder field-descriptor vals]
   (when vals
     (if (.isRepeated field-descriptor)
       (doseq [v vals]
         (.addRepeatedField builder field-descriptor v))
       (.setField builder field-descriptor vals))))
+
 
 (defmethod build :ENUM [type builder field-descriptor vals]
   (when vals
@@ -74,9 +71,14 @@
           )
         (.setField builder field-descriptor (.findValueByName enum-field-descripter vals))))))
 
+
 (defmethod build :INT [type builder field-descriptor vals]
   (when vals
-    (.setField builder field-descriptor vals)))
+    (if (.isRepeated field-descriptor)
+      (doseq [v vals]
+        (.addRepeatedField builder field-descriptor (.intValue v)))
+      (.setField builder field-descriptor (.intValue vals)))))
+
 
 (defmethod build :LONG [type builder field-descriptor vals]
   (when vals
@@ -130,7 +132,6 @@
         (<-message v)
         :default
         v))
-
 
 
 (defn <-message [m]
