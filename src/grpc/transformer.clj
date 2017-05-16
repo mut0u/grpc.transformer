@@ -79,6 +79,13 @@
         (.addRepeatedField builder field-descriptor (.intValue v)))
       (.setField builder field-descriptor (.intValue vals)))))
 
+(defmethod build :DOUBLE [type builder field-descriptor vals]
+  (when vals
+    (if (.isRepeated field-descriptor)
+      (doseq [v vals]
+        (.addRepeatedField builder field-descriptor (.doubleValue v)))
+      (.setField builder field-descriptor (.doubleValue vals)))))
+
 
 (defmethod build :LONG [type builder field-descriptor vals]
   (when vals
