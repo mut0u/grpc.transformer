@@ -62,8 +62,6 @@
 
 
 (defmethod build :ENUM [type builder field-descriptor vals]
-  (prn "1111" vals)
-  (prn "11333" (class vals))
   (when vals
     (let [enum-field-descripter (.getEnumType field-descriptor)]
       (if (.isRepeated field-descriptor)
