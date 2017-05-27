@@ -75,7 +75,7 @@
            (let [clz Demo$EnumMessage
                  builder (find-builder clz)
                  descriptor (find-builder-descriptor clz)]
-             (prn (->message {:bar "BAR_B"} clz))
+             (prn (->message {:bar :BAR_B} clz))
              true)))))
 
 
@@ -86,7 +86,7 @@
            (let [clz Demo$EnumMessage
                  builder (find-builder clz)
                  descriptor (find-builder-descriptor clz)]
-             (prn (<-message (->message {:bar "BAR_B"} clz)))
+             (prn (<-message (->message {:bar :BAR_B} clz)))
              true)))))
 
 
@@ -98,7 +98,7 @@
            (let [clz Demo$RepeatedEnumMessage
                  builder (find-builder clz)
                  descriptor (find-builder-descriptor clz)]
-             (prn (->message {:bar ["BAR_B" "BAR_C" "BAR_A" "BAR_B"]} clz))
+             (prn (->message {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]} clz))
              true)))))
 
 
@@ -108,7 +108,7 @@
            (let [clz Demo$RepeatedEnumMessage
                  builder (find-builder clz)
                  descriptor (find-builder-descriptor clz)]
-             (prn (<-message (->message {:bar ["BAR_B" "BAR_C" "BAR_A" "BAR_B"]} clz)))
+             (prn (<-message (->message {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]} clz)))
              true)))))
 
 

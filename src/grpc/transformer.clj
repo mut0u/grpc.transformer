@@ -62,14 +62,16 @@
 
 
 (defmethod build :ENUM [type builder field-descriptor vals]
+  (prn "1111" vals)
+  (prn "11333" (class vals))
   (when vals
     (let [enum-field-descripter (.getEnumType field-descriptor)]
       (if (.isRepeated field-descriptor)
-        (doseq [v (map #(.findValueByName enum-field-descripter %) vals)]
+        (doseq [v (map #(.findValueByName enum-field-descripter %) (map name vals))]
           ;;(.setRepeatedField builder field-descriptor 0 v)
           (.addRepeatedField builder field-descriptor v)
           )
-        (.setField builder field-descriptor (.findValueByName enum-field-descripter vals))))))
+        (.setField builder field-descriptor (.findValueByName enum-field-descripter (name vals)))))))
 
 
 (defmethod build :INT [type builder field-descriptor vals]
@@ -134,7 +136,7 @@
 
 (defn parse-message-value [v]
   (cond (instance? com.google.protobuf.Descriptors$EnumValueDescriptor v)
-        (.getName v)
+        (keyword (.getName v))
         (instance? com.google.protobuf.Message v)
         (<-message v)
         :default
