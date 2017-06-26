@@ -1,7 +1,7 @@
 (ns grpc.transformer-test
   (:require [clojure.test :refer :all]
             [grpc.transformer :refer :all])
-  (:import [michael.test Demo$StringMessage Demo$EnumMessage Demo$RepeatedEnumMessage Demo$IntMessage Demo$RepeatedStringMessage Demo$DemoMessage Demo$Message1 Demo$NestedMessage]))
+  (:import [michael.test Demo$StringMessage Demo$EnumMessage Demo$RepeatedEnumMessage Demo$IntMessage Demo$RepeatedStringMessage Demo$DemoMessage Demo$Message1 Demo$NestedMessage Demo$MapMessage]))
 
 
 
@@ -17,9 +17,9 @@
 
 
 
-(deftest ->message-test
-  (testing "test clojure message transfer to protobuf message "
-    (is (nil? (prn     (->message oo clz))))))
+#_(deftest ->message-test
+    (testing "test clojure message transfer to protobuf message "
+      (is (nil? (prn     (->message oo clz))))))
 
 (deftest test1
   (testing "he"
@@ -95,9 +95,7 @@
 (deftest test4
   (testing "he"
     (is (= true
-           (let [clz Demo$RepeatedEnumMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
+           (let [clz Demo$RepeatedEnumMessage]
              (prn (->message {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]} clz))
              true)))))
 
@@ -105,9 +103,7 @@
 (deftest test14
   (testing "he"
     (is (= true
-           (let [clz Demo$RepeatedEnumMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
+           (let [clz Demo$RepeatedEnumMessage]
              (prn (<-message (->message {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]} clz)))
              true)))))
 
@@ -236,8 +232,23 @@
 (deftest test10
   (testing "he"
     (is (= true
-           (let [clz Demo$NestedMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
+           (let [clz Demo$NestedMessage]
              (prn (->message {:n {:n2 {:n1 {:str "BBB"} :i {:s "aaaa"}}}} clz))
+             true)))))
+
+
+
+(deftest testA0
+  (testing "he"
+    (is (= true
+           (let [clz Demo$MapMessage]
+             (prn (->message {:m {"a" "aaa" "b" "bb" "c" "c" }} clz))
+             true)))))
+
+
+(deftest testA1
+  (testing "he"
+    (is (= true
+           (let [clz Demo$MapMessage]
+             (prn (<-message (->message {:m {"a" "aaa" "b" "bb" "c" "c" }} Demo$MapMessage)))
              true)))))

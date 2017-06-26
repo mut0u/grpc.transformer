@@ -1,4 +1,5 @@
 (ns grpc.transformer
+  (:require [clojure.walk])
   (:import [io.grpc Server ServerBuilder]))
 
 
@@ -8,6 +9,14 @@
                          (= (count params) (count (.getParameterTypes %))))
                    (.getDeclaredMethods clz))]
     (first ms)))
+
+(defn find-methods [clz mname ]
+  (filter #(= mname (.getName %)) (.getDeclaredMethods clz)))
+
+
+(defn display-method [clz]
+  (map #(.getName %) (.getDeclaredMethods clz)))
+
 
 
 (defn- call-static-class-method [clz mname]
@@ -29,7 +38,7 @@
          (.toUpperCase (.substring json-name 0 1))
          (.substring json-name 1))))
 
-(defmulti build (fn [type builder name val] type))
+(defmulti build (fn [type builder method name val] type))
 
 (def type-map {:BOOLEAN java.lang.Boolean
                :DOUBLE java.lang.Double
@@ -53,7 +62,8 @@
       (Class/forName (.substring new-builder-name 0 (- (count new-builder-name) 8))))))
 
 
-(defmethod build :STRING [type builder field-descriptor vals]
+
+(defmethod build :STRING [type builder method field-descriptor vals]
   (when vals
     (if (.isRepeated field-descriptor)
       (doseq [v vals]
@@ -61,7 +71,7 @@
       (.setField builder field-descriptor vals))))
 
 
-(defmethod build :ENUM [type builder field-descriptor vals]
+(defmethod build :ENUM [type builder method field-descriptor vals]
   (when vals
     (let [enum-field-descripter (.getEnumType field-descriptor)]
       (if (.isRepeated field-descriptor)
@@ -72,14 +82,14 @@
         (.setField builder field-descriptor (.findValueByName enum-field-descripter (name vals)))))))
 
 
-(defmethod build :INT [type builder field-descriptor vals]
+(defmethod build :INT [type builder method field-descriptor vals]
   (when vals
     (if (.isRepeated field-descriptor)
       (doseq [v vals]
         (.addRepeatedField builder field-descriptor (.intValue v)))
       (.setField builder field-descriptor (.intValue vals)))))
 
-(defmethod build :DOUBLE [type builder field-descriptor vals]
+(defmethod build :DOUBLE [type builder method field-descriptor vals]
   (when vals
     (if (.isRepeated field-descriptor)
       (doseq [v vals]
@@ -87,13 +97,13 @@
       (.setField builder field-descriptor (.doubleValue vals)))))
 
 
-(defmethod build :LONG [type builder field-descriptor vals]
+(defmethod build :LONG [type builder method field-descriptor vals]
   (when vals
     (.setField builder field-descriptor vals)))
 
 (declare ->message)
 
-(defmethod build :MESSAGE [type builder field-descriptor vals]
+(defmethod build :MESSAGE [type builder method field-descriptor vals]
   (when vals
     (if (.isRepeated field-descriptor)
       (let [clz (message-field-descriptor->clz builder field-descriptor)]
@@ -106,11 +116,29 @@
         (.setField builder field-descriptor inner-message)))))
 
 
+;;
+
+
+(defmethod build :MAP [type builder method field-descriptor m]
+  (when m
+    (.clearField builder field-descriptor)
+    (.invoke method builder (object-array [m]))))
+
+
+
 (defn parse-field-descriptor [builder field-descriptor]
-  (let [build-method-str (if (.isRepeated field-descriptor)
-                           (field-builder-method-name "add" field-descriptor)
-                           (field-builder-method-name "set" field-descriptor))]
-    {:type (keyword (str (.getJavaType field-descriptor)))
+  (let [type (if (.isMapField field-descriptor)
+               :MAP
+               (keyword (str (.getJavaType field-descriptor))))
+        builder-name (.getName (class builder))
+        build-method-str (cond (and (.isRepeated field-descriptor) (= :MAP type))
+                               (field-builder-method-name "putAll" field-descriptor)
+                               (.isRepeated field-descriptor)
+                               (field-builder-method-name "add" field-descriptor)
+                               :else
+                               (field-builder-method-name "set" field-descriptor))]
+
+    {:type type
      :name (keyword (.getName field-descriptor))
      :build-method-str build-method-str
      :build-method (find-method (class builder) build-method-str 1)
@@ -124,7 +152,7 @@
         descriptor (find-builder-descriptor clz)]
     (doseq [field (.getFields descriptor)]
       (let [{:keys [type build-method name repeated?]} (parse-field-descriptor builder field)]
-        (build type builder field (get o name))))
+        (build type builder build-method field (get o name))))
     (.build builder)))
 
 
@@ -145,9 +173,32 @@
   (let [mm (java.util.HashMap.)]
     (.putAll mm (.getAllFields m))
     (into {} (for [[k v ] mm]
-               [(keyword (.getName k))
-                (if (instance? java.util.List v)
-                  (let [vv (java.util.ArrayList.)
-                        _ (.addAll vv v)]
-                    (into [] (map parse-message-value vv)))
-                  (parse-message-value v))]))))
+               (if (.isMapField k)
+                 [(keyword (.getName k)) (let [vv (java.util.ArrayList.)
+                                               _ (.addAll vv v)]
+                                           (into {} (map (fn [i] {(:key i) (:value i)}) (map parse-message-value vv))))]
+                 [(keyword (.getName k))
+                  (if (instance? java.util.List v)
+                    (let [vv (java.util.ArrayList.)
+                          _ (.addAll vv v)]
+                      (into [] (map parse-message-value vv)))
+                    (parse-message-value v))]
+                 )
+               ))))
+
+
+
+(comment
+  (def clz michael.test.Demo$MapMessage)
+  (def   builder  (find-builder clz))
+  (def descriptor (find-builder-descriptor clz))
+  (def fs (.getFields descriptor))
+  (def f1 (first fs))
+  (def f2 (first (next fs)))
+
+
+  (parse-field-descriptor builder f1)
+
+  (parse-field-descriptor builder f2)
+  (def method (:build-method    (parse-field-descriptor builder f2)))
+  )
