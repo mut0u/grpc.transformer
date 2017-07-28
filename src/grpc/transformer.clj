@@ -3,7 +3,6 @@
   (:import [io.grpc Server ServerBuilder]))
 
 
-
 (defn find-method [clz mname & params]
   (let [ms (filter #(and (= mname (.getName %))
                          (= (count params) (count (.getParameterTypes %))))
@@ -39,16 +38,6 @@
          (.substring json-name 1))))
 
 (defmulti build (fn [type builder method name val] type))
-
-(def type-map {:BOOLEAN java.lang.Boolean
-               :DOUBLE java.lang.Double
-               :ENUM java.lang.Enum
-               :FLOAT java.lang.Float
-               :INT java.lang.Integer
-               :LONG java.lang.Long
-               :STRING java.lang.String
-               ;;;BYTE_STRING
-               })
 
 
 (defn message-field-descriptor->clz [builder field-descriptor]
@@ -96,10 +85,19 @@
         (.addRepeatedField builder field-descriptor (.doubleValue v)))
       (.setField builder field-descriptor (.doubleValue vals)))))
 
+(defmethod build :BOOLEAN [type builder method field-descriptor vals]
+  (when vals
+    (if (.isRepeated field-descriptor)
+      (doseq [v vals]
+        (.addRepeatedField builder field-descriptor v))
+      (.setField builder field-descriptor vals))))
 
 (defmethod build :LONG [type builder method field-descriptor vals]
   (when vals
-    (.setField builder field-descriptor vals)))
+    (if (.isRepeated field-descriptor)
+      (doseq [v vals]
+        (.addRepeatedField builder field-descriptor v))
+      (.setField builder field-descriptor vals))))
 
 (declare ->message)
 
@@ -123,7 +121,6 @@
   (when m
     (.clearField builder field-descriptor)
     (.invoke method builder (object-array [m]))))
-
 
 
 (defn parse-field-descriptor [builder field-descriptor]
@@ -165,40 +162,25 @@
         (keyword (.getName v))
         (instance? com.google.protobuf.Message v)
         (<-message v)
+        (instance? java.util.List v)
+        (let [vv (java.util.ArrayList.)
+              _ (.addAll vv v)]
+          (into [] (map parse-message-value vv)))
         :default
         v))
 
 
+(defn- change-map-field [v]
+  (let [vv (java.util.ArrayList.)
+        _ (.addAll vv v)]
+    (into {} (map (fn [i] {(:key i) (:value i)}) (map parse-message-value vv)))))
+
 (defn <-message [m]
   (let [mm (java.util.HashMap.)]
     (.putAll mm (.getAllFields m))
-    (into {} (for [[k v ] mm]
-               (if (.isMapField k)
-                 [(keyword (.getName k)) (let [vv (java.util.ArrayList.)
-                                               _ (.addAll vv v)]
-                                           (into {} (map (fn [i] {(:key i) (:value i)}) (map parse-message-value vv))))]
-                 [(keyword (.getName k))
-                  (if (instance? java.util.List v)
-                    (let [vv (java.util.ArrayList.)
-                          _ (.addAll vv v)]
-                      (into [] (map parse-message-value vv)))
-                    (parse-message-value v))]
-                 )
-               ))))
-
-
-
-(comment
-  (def clz michael.test.Demo$MapMessage)
-  (def   builder  (find-builder clz))
-  (def descriptor (find-builder-descriptor clz))
-  (def fs (.getFields descriptor))
-  (def f1 (first fs))
-  (def f2 (first (next fs)))
-
-
-  (parse-field-descriptor builder f1)
-
-  (parse-field-descriptor builder f2)
-  (def method (:build-method    (parse-field-descriptor builder f2)))
-  )
+    (into {} (for [[k v] mm]
+               (let [new-key (keyword (.getName k))
+                     new-val (if (.isMapField k)
+                               (change-map-field v)
+                               (parse-message-value v))]
+                 [new-key new-val])))))

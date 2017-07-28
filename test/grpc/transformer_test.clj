@@ -4,9 +4,6 @@
   (:import [michael.test Demo$StringMessage Demo$EnumMessage Demo$RepeatedEnumMessage Demo$IntMessage Demo$RepeatedStringMessage Demo$DemoMessage Demo$Message1 Demo$NestedMessage Demo$MapMessage]))
 
 
-
-
-
 (deftest test-repeated-string-message
   (testing "test clojure message transfer to protobuf message "
     (let [clz Demo$RepeatedStringMessage
@@ -17,238 +14,22 @@
 
 
 
-#_(deftest ->message-test
-    (testing "test clojure message transfer to protobuf message "
-      (is (nil? (prn     (->message oo clz))))))
-
-(deftest test1
-  (testing "he"
-    (is (= true
-           (do
-             (let [clz Demo$StringMessage
-                   builder (find-builder clz)
-                   descriptor (find-builder-descriptor clz)]
-               (prn (->message {:s "aa"} clz)))
-             true)))))
-
-
-(deftest test11
-  (testing "he"
-    (is (= true
-           (do
-             (let [clz Demo$StringMessage
-                   builder (find-builder clz)
-                   descriptor (find-builder-descriptor clz)]
-               (prn (<-message (->message {:s "aa"} clz))))
-             true)))))
-
-
-
-(deftest test2
-  (testing "he"
-    (is (= true
-           (do
-             (let [clz Demo$RepeatedStringMessage
-                   builder (find-builder clz)
-                   descriptor (find-builder-descriptor clz)]
-               (prn (->message {:slist ["a" "d" "e"]} clz)))
-             true)))))
-
-
-
-(deftest test12
-  (testing "he"
-    (is (= true
-           (do
-             (let [clz Demo$RepeatedStringMessage
-                   builder (find-builder clz)
-                   descriptor (find-builder-descriptor clz)]
-               (prn (<-message (->message {:slist ["a" "d" "e"]} clz))))
-             true)))))
-
-
-
-
-(deftest test3
-  (testing "he"
-    (is (= true
-           (let [clz Demo$EnumMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (->message {:bar :BAR_B} clz))
-             true)))))
-
-
-
-(deftest test13
-  (testing "he"
-    (is (= true
-           (let [clz Demo$EnumMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (<-message (->message {:bar :BAR_B} clz)))
-             true)))))
-
-
-
-
-(deftest test4
-  (testing "he"
-    (is (= true
-           (let [clz Demo$RepeatedEnumMessage]
-             (prn (->message {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]} clz))
-             true)))))
-
-
-(deftest test14
-  (testing "he"
-    (is (= true
-           (let [clz Demo$RepeatedEnumMessage]
-             (prn (<-message (->message {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]} clz)))
-             true)))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-(deftest test5
-  (testing "he"
-    (is (= true
-           (let [clz Demo$IntMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (->message {:i 66} clz))
-             true)))))
-
-
-
-(deftest test15
-  (testing "he"
-    (is (= true
-           (let [clz Demo$IntMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (<-message (->message {:i 66} clz)))
-             true)))))
-
-
-
-
-(deftest test6
-  (testing "he"
-    (is (= true
-           (let [clz Demo$Message1
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (->message {:str "hello world" :i 76} clz))
-             true)))))
-
-
-(deftest test16
-  (testing "he"
-    (is (= true
-           (let [clz Demo$Message1
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (<-message (->message {:str "hello world" :i 76} clz)))
-             true)))))
-
-
-(deftest test7
-  (testing "he"
-    (is (= true
-           (let [clz Demo$DemoMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (->message {:m2 {:s "hello world0" :i 1}} clz))
-             true)))))
-
-
-(deftest test17
-  (testing "he"
-    (is (= true
-           (let [clz Demo$DemoMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (<-message (->message {:m2 {:s "hello world0" :i 1}} clz)))
-             true)))))
-
-
-
-(deftest test8
-  (testing "he"
-    (is (= true
-           (let [clz Demo$DemoMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (->message {;;:m2 {:s "hello world0" :i 1}
-                              :m_list [{:str "aa" :i  1}
-                                       {:str "bb" :i  2}]} clz))
-             true)))))
-
-
-(deftest test18
-  (testing "he"
-    (is (= true
-           (let [clz Demo$DemoMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (<-message (->message {;;:m2 {:s "hello world0" :i 1}
-                                         :m_list [{:str "aa" :i  1}
-                                                  {:str "bb" :i  2}]} Demo$DemoMessage)))
-             true)))))
-
-
-
-
-(deftest test9
-  (testing "he"
-    (is (= true
-           (let [clz Demo$NestedMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (->message {:n {:n2 {:n1 {:str "BBB"} :i {:s "aaaa"}}}} clz))
-             true)))))
-
-(deftest test19
-  (testing "he"
-    (is (= true
-           (let [clz Demo$NestedMessage
-                 builder (find-builder clz)
-                 descriptor (find-builder-descriptor clz)]
-             (prn (<-message (->message {:n {:n2 {:n1 {:str "BBB"} :i {:s "aaaa"}}}} clz)))
-             true)))))
-
-
-
-(deftest test10
-  (testing "he"
-    (is (= true
-           (let [clz Demo$NestedMessage]
-             (prn (->message {:n {:n2 {:n1 {:str "BBB"} :i {:s "aaaa"}}}} clz))
-             true)))))
-
-
-
-(deftest testA0
-  (testing "he"
-    (is (= true
-           (let [clz Demo$MapMessage]
-             (prn (->message {:m {"a" "aaa" "b" "bb" "c" "c" }} clz))
-             true)))))
-
-
-(deftest testA1
-  (testing "he"
-    (is (= true
-           (let [clz Demo$MapMessage]
-             (prn (<-message (->message {:m {"a" "aaa" "b" "bb" "c" "c" }} Demo$MapMessage)))
-             true)))))
+(deftest test-base
+  (testing "test base message transformer"
+    (is (let [o {:s "aa"} clz Demo$StringMessage] (= o (<-message (->message o clz)))))
+    (is (let [o {:s ""} clz Demo$StringMessage] (= {} (<-message (->message o clz)))))
+    (is (let [o {:s1 "a"} clz Demo$StringMessage] (= {} (<-message (->message o clz)))))
+    (is (let [clz Demo$EnumMessage o {:bar :BAR_B}] (= o (<-message (->message o clz)))))
+    (is (let [clz Demo$IntMessage o {:i 66}] (= o (<-message (->message o clz)))))
+    (is (let [clz Demo$Message1 o {:str "hello world" :i 76}] (= o (<-message (->message o clz)))))
+    (is (let [clz Demo$DemoMessage o {:m2 {:s "hello world0" :i 1}}] (= o (<-message (->message o clz)))))
+    (is (let [clz Demo$NestedMessage o {:n {:n2 {:n1 {:str "BBB"} :i {:s "aaaa"}}}}] (= o (<-message (->message o clz)))))
+    (is (let [clz Demo$MapMessage o {:m {"a" "aaa" "b" "bb" "c" "c" }}] (= o (<-message (->message o clz)))))
+    ))
+
+
+(deftest test-repeated
+  (testing "test the repeated message transformer "
+    (is (let [o {:slist ["a" "d" "e"]} clz Demo$RepeatedStringMessage] (= o (<-message (->message o clz)))))
+    (is (let [clz Demo$RepeatedEnumMessage o {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]}] (= o (<-message (->message o clz)))))
+    (is (let [clz Demo$DemoMessage o {:m_list [{:str "aa" :i  1} {:str "bb" :i  2}]}] (= o (<-message (->message o clz)))))))

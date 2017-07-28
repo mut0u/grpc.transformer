@@ -1,10 +1,22 @@
 # grpc.transformer
 
-A Clojure library designed to ... well, that part is up to you.
+This the transformer between clojure data and grpc protobuf message.
 
-## Usage
 
-FIXME
+
+
+## Getting started
+
+Add the necessary dependency to your project:
+
+```
+
+    [grpc.transformer "0.1.0-SNAPSHOT"]
+
+
+```
+
+
 
 ## License
 
