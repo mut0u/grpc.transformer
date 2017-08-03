@@ -13,7 +13,7 @@
   (filter #(= mname (.getName %)) (.getDeclaredMethods clz)))
 
 
-(defn display-method [clz]
+(defn- display-method [clz]
   (map #(.getName %) (.getDeclaredMethods clz)))
 
 
@@ -37,7 +37,17 @@
          (.toUpperCase (.substring json-name 0 1))
          (.substring json-name 1))))
 
-(defmulti build (fn [type builder method name val] type))
+(def TYPE-MAP {:STRING :BASE
+               :ENUM :ENUM
+               :INT :BASE
+               :DOUBLE :BASE
+               :BOOLEAN :BASE
+               :LONG :BASE
+               :MAP :BASE
+               :MESSAGE :MESSAGE})
+
+
+(defmulti build (fn [type builder method name val] (TYPE-MAP type)))
 
 
 (defn message-field-descriptor->clz [builder field-descriptor]
@@ -50,14 +60,24 @@
     (if (clojure.string/ends-with? new-builder-name "$Builder")
       (Class/forName (.substring new-builder-name 0 (- (count new-builder-name) 8))))))
 
+(defmethod build :REPEAT [type builder method field-descriptor vals]
+  (doseq [v vals]
+    (.invoke method builder (object-array [v]))))
 
 
-(defmethod build :STRING [type builder method field-descriptor vals]
+(defmethod build :BASE [type builder method field-descriptor vals]
   (when vals
-    (if (.isRepeated field-descriptor)
-      (doseq [v vals]
-        (.addRepeatedField builder field-descriptor v))
-      (.setField builder field-descriptor vals))))
+    (.clearField builder field-descriptor)
+    (.invoke method builder (object-array [vals]))))
+
+
+#_(defmethod build :ENUM [type builder method field-descriptor vals]
+    (when vals
+      (prn "1111" vals)
+      (prn "222" (name vals))
+      (prn "3333" method)
+      (.clearField builder field-descriptor)
+      (.invoke method builder (object-array [(name vals)]))))
 
 
 (defmethod build :ENUM [type builder method field-descriptor vals]
@@ -71,33 +91,33 @@
         (.setField builder field-descriptor (.findValueByName enum-field-descripter (name vals)))))))
 
 
-(defmethod build :INT [type builder method field-descriptor vals]
-  (when vals
-    (if (.isRepeated field-descriptor)
-      (doseq [v vals]
-        (.addRepeatedField builder field-descriptor (.intValue v)))
-      (.setField builder field-descriptor (.intValue vals)))))
+#_(defmethod build :INT [type builder method field-descriptor vals]
+    (when vals
+      (if (.isRepeated field-descriptor)
+        (doseq [v vals]
+          (.addRepeatedField builder field-descriptor (.intValue v)))
+        (.setField builder field-descriptor (.intValue vals)))))
 
-(defmethod build :DOUBLE [type builder method field-descriptor vals]
-  (when vals
-    (if (.isRepeated field-descriptor)
-      (doseq [v vals]
-        (.addRepeatedField builder field-descriptor (.doubleValue v)))
-      (.setField builder field-descriptor (.doubleValue vals)))))
+#_(defmethod build :DOUBLE [type builder method field-descriptor vals]
+    (when vals
+      (if (.isRepeated field-descriptor)
+        (doseq [v vals]
+          (.addRepeatedField builder field-descriptor (.doubleValue v)))
+        (.setField builder field-descriptor (.doubleValue vals)))))
 
-(defmethod build :BOOLEAN [type builder method field-descriptor vals]
-  (when vals
-    (if (.isRepeated field-descriptor)
-      (doseq [v vals]
-        (.addRepeatedField builder field-descriptor v))
-      (.setField builder field-descriptor vals))))
+#_(defmethod build :BOOLEAN [type builder method field-descriptor vals]
+    (when vals
+      (if (.isRepeated field-descriptor)
+        (doseq [v vals]
+          (.addRepeatedField builder field-descriptor v))
+        (.setField builder field-descriptor vals))))
 
-(defmethod build :LONG [type builder method field-descriptor vals]
-  (when vals
-    (if (.isRepeated field-descriptor)
-      (doseq [v vals]
-        (.addRepeatedField builder field-descriptor v))
-      (.setField builder field-descriptor vals))))
+#_(defmethod build :LONG [type builder method field-descriptor vals]
+    (when vals
+      (if (.isRepeated field-descriptor)
+        (doseq [v vals]
+          (.addRepeatedField builder field-descriptor v))
+        (.setField builder field-descriptor vals))))
 
 (declare ->message)
 
@@ -117,10 +137,10 @@
 ;;
 
 
-(defmethod build :MAP [type builder method field-descriptor m]
-  (when m
-    (.clearField builder field-descriptor)
-    (.invoke method builder (object-array [m]))))
+#_(defmethod build :MAP [type builder method field-descriptor m]
+    (when m
+      (.clearField builder field-descriptor)
+      (.invoke method builder (object-array [m]))))
 
 
 (defn parse-field-descriptor [builder field-descriptor]

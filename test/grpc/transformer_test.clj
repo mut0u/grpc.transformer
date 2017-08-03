@@ -4,13 +4,13 @@
   (:import [michael.test Demo$StringMessage Demo$EnumMessage Demo$RepeatedEnumMessage Demo$IntMessage Demo$RepeatedStringMessage Demo$DemoMessage Demo$Message1 Demo$NestedMessage Demo$MapMessage]))
 
 
-(deftest test-repeated-string-message
-  (testing "test clojure message transfer to protobuf message "
-    (let [clz Demo$RepeatedStringMessage
-          message-value ["hello" "world"]
-          message (->message {:slist message-value} clz)]
-      (is (= michael.test.Demo$RepeatedStringMessage (type message)))
-      (is (= message-value (.getSlist message))))))
+#_(deftest test-repeated-string-message
+    (testing "test clojure message transfer to protobuf message "
+      (let [clz Demo$RepeatedStringMessage
+            message-value ["hello" "world"]
+            message (->message {:slist message-value} clz)]
+        (is (= michael.test.Demo$RepeatedStringMessage (type message)))
+        (is (= message-value (.getSlist message))))))
 
 
 
