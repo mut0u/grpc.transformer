@@ -4,6 +4,17 @@
   (:import [michael.test Demo$StringMessage Demo$EnumMessage Demo$RepeatedEnumMessage Demo$IntMessage Demo$RepeatedStringMessage Demo$DemoMessage Demo$Message1 Demo$NestedMessage Demo$MapMessage]))
 
 
+(defn- display-method [clz]
+  (map #(.getName %) (.getDeclaredMethods clz)))
+
+(defn find-methods [clz mname ]
+  (filter #(= mname (.getName %)) (.getDeclaredMethods clz)))
+
+(defn- call-static-class-method [clz mname]
+  (let [method (find-method clz mname)]
+    (.invoke method nil nil)))
+
+
 #_(deftest test-repeated-string-message
     (testing "test clojure message transfer to protobuf message "
       (let [clz Demo$RepeatedStringMessage
@@ -31,5 +42,5 @@
 (deftest test-repeated
   (testing "test the repeated message transformer "
     (is (let [o {:slist ["a" "d" "e"]} clz Demo$RepeatedStringMessage] (= o (<-message (->message o clz)))))
-    (is (let [clz Demo$RepeatedEnumMessage o {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]}] (= o (<-message (->message o clz)))))
+    (is (let [clz Demo$RepeatedEnumMessage o {:bar [:BAR_B :BAR_C :BAR_A :BAR_B]}] (->message o clz)))
     (is (let [clz Demo$DemoMessage o {:m_list [{:str "aa" :i  1} {:str "bb" :i  2}]}] (= o (<-message (->message o clz)))))))
